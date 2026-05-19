@@ -30,6 +30,16 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 
+tasks.named('jar', Jar) {
+    archiveBaseName.set('singham-core')
+    archiveVersion.set('1.0.0')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+}
+
 tasks.test {
     useJUnitPlatform()
 }

@@ -19,9 +19,13 @@ public class DatabaseManager {
 
     private final SinghamCorePlugin plugin;
     private final HikariDataSource dataSource;
+    private final boolean available;
 
     public DatabaseManager(SinghamCorePlugin plugin) {
         this.plugin = plugin;
+        HikariDataSource source = null;
+        boolean isAvailable = false;
+
         FileConfiguration config = plugin.getConfig();
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(String.format("jdbc:postgresql://%s:%d/%s",
@@ -30,18 +34,42 @@ public class DatabaseManager {
                 config.getString("database.database")));
         hikariConfig.setUsername(config.getString("database.username"));
         hikariConfig.setPassword(config.getString("database.password"));
+        hikariConfig.setDriverClassName("org.postgresql.Driver");
         hikariConfig.setMinimumIdle(config.getInt("database.minimumPoolSize"));
         hikariConfig.setMaximumPoolSize(config.getInt("database.maximumPoolSize"));
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+        hikariConfig.setInitializationFailTimeout(0);
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-        dataSource = new HikariDataSource(hikariConfig);
-        createTables();
+        try {
+            Class.forName("org.postgresql.Driver");
+            source = new HikariDataSource(hikariConfig);
+            try (Connection connection = source.getConnection()) {
+                createTables(connection);
+            }
+            isAvailable = true;
+        } catch (ClassNotFoundException exception) {
+            plugin.getLogger().severe("PostgreSQL driver not found: " + exception.getMessage());
+        } catch (Exception exception) {
+            plugin.getLogger().severe("Unable to initialize database connection: " + exception.getMessage());
+            if (source != null) {
+                source.close();
+                source = null;
+            }
+        }
+
+        if (!isAvailable) {
+            plugin.getLogger().warning("Singham Core is starting in degraded mode because PostgreSQL is unavailable. Punishments will be cached locally until the database is restored.");
+        }
+
+        this.dataSource = source;
+        this.available = isAvailable;
     }
 
-    private void createTables() {
-        try (Connection connection = getConnection()) {
+    private void createTables(Connection connection) {
+        try {
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS players (uuid UUID PRIMARY KEY, name TEXT NOT NULL);")
                     .execute();
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS punishments (id SERIAL PRIMARY KEY, player_uuid UUID NOT NULL, player_name TEXT NOT NULL, punishment_type TEXT NOT NULL, moderator TEXT NOT NULL, reason TEXT NOT NULL, duration BIGINT, created_at TIMESTAMP NOT NULL, expires_at TIMESTAMP, ip_address TEXT, active BOOLEAN NOT NULL);")
@@ -58,10 +86,20 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
+        if (!available || dataSource == null) {
+            throw new SQLException("Database is unavailable.");
+        }
         return dataSource.getConnection();
     }
 
+    public boolean isAvailable() {
+        return available;
+    }
+
     public CompletableFuture<Void> savePunishmentAsync(Punishment punishment) {
+        if (!available) {
+            return CompletableFuture.completedFuture(null);
+        }
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -87,6 +125,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<List<Punishment>> loadActivePunishmentsAsync() {
+        if (!available) {
+            return CompletableFuture.completedFuture(new ArrayList<>());
+        }
         return CompletableFuture.supplyAsync(() -> {
             List<Punishment> punishments = new ArrayList<>();
             try (Connection connection = getConnection();
@@ -115,6 +156,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> updatePunishmentActiveAsync(long punishmentId, boolean active) {
+        if (!available) {
+            return CompletableFuture.completedFuture(null);
+        }
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement("UPDATE punishments SET active = ? WHERE id = ?;")) {
@@ -128,6 +172,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> saveReportAsync(com.friendsmp.singhamcore.models.ReportEntry report) {
+        if (!available) {
+            return CompletableFuture.completedFuture(null);
+        }
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -146,6 +193,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> saveStaffLogAsync(com.friendsmp.singhamcore.models.StaffLogEntry entry) {
+        if (!available) {
+            return CompletableFuture.completedFuture(null);
+        }
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -164,6 +214,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Integer> adjustReputationAsync(UUID playerUuid, int delta) {
+        if (!available) {
+            return CompletableFuture.completedFuture(0);
+        }
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement(
@@ -183,6 +236,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<com.friendsmp.singhamcore.models.ReputationRecord> getReputationRecordAsync(UUID playerUuid) {
+        if (!available) {
+            return CompletableFuture.completedFuture(new com.friendsmp.singhamcore.models.ReputationRecord(playerUuid, 0, Instant.now()));
+        }
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection();
                  PreparedStatement statement = connection.prepareStatement("SELECT score, updated_at FROM reputation WHERE player_uuid = ?;")) {
@@ -200,6 +256,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<java.util.List<com.friendsmp.singhamcore.models.Punishment>> loadPunishmentHistoryAsync(UUID playerUuid) {
+        if (!available) {
+            return CompletableFuture.completedFuture(new java.util.ArrayList<>());
+        }
         return CompletableFuture.supplyAsync(() -> {
             var history = new java.util.ArrayList<com.friendsmp.singhamcore.models.Punishment>();
             try (Connection connection = getConnection();
@@ -229,6 +288,9 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<java.util.List<com.friendsmp.singhamcore.models.StaffLogEntry>> loadStaffLogsAsync(int limit) {
+        if (!available) {
+            return CompletableFuture.completedFuture(new java.util.ArrayList<>());
+        }
         return CompletableFuture.supplyAsync(() -> {
             var list = new java.util.ArrayList<com.friendsmp.singhamcore.models.StaffLogEntry>();
             try (Connection connection = getConnection();
