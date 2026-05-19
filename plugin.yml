@@ -1,0 +1,103 @@
+name: Singham Core
+main: com.friendsmp.singhamcore.SinghamCorePlugin
+version: 1.0.0
+api-version: '1.20'
+authors:
+  - FriendsMP
+website: https://friendsmp.example
+commands:
+  ban:
+    description: Ban a player permanently.
+    usage: /ban <player> <reason>
+    permission: singhamcore.command.ban
+  tempban:
+    description: Temporarily ban a player.
+    usage: /tempban <player> <duration> <reason>
+    permission: singhamcore.command.tempban
+  ipban:
+    description: Ban an IP address.
+    usage: /ipban <ip> <reason>
+    permission: singhamcore.command.ipban
+  mute:
+    description: Mute a player.
+    usage: /mute <player> <reason>
+    permission: singhamcore.command.mute
+  tempmute:
+    description: Temporarily mute a player.
+    usage: /tempmute <player> <duration> <reason>
+    permission: singhamcore.command.tempmute
+  kick:
+    description: Kick a player.
+    usage: /kick <player> <reason>
+    permission: singhamcore.command.kick
+  warn:
+    description: Warn a player.
+    usage: /warn <player> <reason>
+    permission: singhamcore.command.warn
+  history:
+    description: View a player's punishment history.
+    usage: /history <player>
+    permission: singhamcore.command.history
+  check:
+    description: Check player moderation profile.
+    usage: /check <player>
+    permission: singhamcore.command.check
+  report:
+    description: Report a player.
+    usage: /report <player> <reason>
+    permission: singhamcore.command.report
+  rep:
+    description: Manage player reputation.
+    usage: /rep <player> <amount> [reason]
+    permission: singhamcore.command.rep
+  note:
+    description: Add an internal staff note.
+    usage: /note <player> <note>
+    permission: singhamcore.command.note
+  stafflog:
+    description: View staff logs.
+    usage: /stafflog [page]
+    permission: singhamcore.command.stafflog
+permissions:
+  singhamcore.command.*:
+    description: Grants access to all Singham Core commands.
+    default: op
+  singhamcore.command.ban:
+    description: Use the ban command.
+    default: op
+  singhamcore.command.tempban:
+    description: Use the tempban command.
+    default: op
+  singhamcore.command.ipban:
+    description: Use the ipban command.
+    default: op
+  singhamcore.command.mute:
+    description: Use the mute command.
+    default: op
+  singhamcore.command.tempmute:
+    description: Use the tempmute command.
+    default: op
+  singhamcore.command.kick:
+    description: Use the kick command.
+    default: op
+  singhamcore.command.warn:
+    description: Use the warn command.
+    default: op
+  singhamcore.command.history:
+    description: View punishment history.
+    default: op
+  singhamcore.command.check:
+    description: View moderation profiles.
+    default: op
+  singhamcore.command.report:
+    description: Submit player reports.
+    default: op
+  singhamcore.command.rep:
+    description: Manage reputation.
+    default: op
+  singhamcore.command.note:
+    description: Add staff notes.
+    default: op
+  singhamcore.command.stafflog:
+    description: View staff logs.
+    default: op

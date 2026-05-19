@@ -1,0 +1,115 @@
+Singham Core
+
+Core moderation and management framework for FriendsMP.
+
+Built for modern Minecraft communities with a clean punishment system, reputation tracking, staff utilities, and database syncing.
+
+Overview
+
+Singham Core is a lightweight but scalable Paper plugin focused on moderation, player management, and staff tooling.
+
+The project is designed around:
+
+performance
+clean architecture
+async database operations
+modern moderation workflows
+future web integration
+Features
+Moderation
+bans
+tempbans
+IP bans
+mutes
+tempmutes
+kicks
+warnings
+Community Systems
+reputation tracking
+player reports
+staff notes
+punishment history
+player moderation profiles
+Logging
+local logging
+PostgreSQL logging
+moderation audit logs
+Stack
+Technology	Usage
+Java 21	Core language
+Paper API	Minecraft server API
+Gradle	Build system
+PostgreSQL	Database
+HikariCP	Connection pooling
+Supabase	Hosted database support
+Commands
+/ban
+/tempban
+/ipban
+/mute
+/tempmute
+/kick
+/warn
+
+/history
+/check
+/report
+
+/rep
+/note
+/stafflog
+Architecture
+src/
+├── api/
+├── commands/
+├── database/
+├── listeners/
+├── managers/
+├── models/
+├── punishments/
+├── reputation/
+├── reports/
+└── utils/
+Database
+Punishments
+
+Stores:
+
+punishment type
+reason
+moderator
+timestamps
+expiry
+active state
+IP data
+Reputation
+
+Tracks:
+
+reputation score
+changes
+issuer
+timestamps
+Staff Logs
+
+Tracks:
+
+moderation actions
+command usage
+player interactions
+Goals
+scalable moderation framework
+modern backend structure
+website integration support
+clean developer API
+optimized async operations
+Planned Features
+REST API
+web dashboard
+Discord integration
+cross-server syncing
+live moderation feed
+analytics system
+Project Status
+
+Currently in active development for the FriendsMP community.

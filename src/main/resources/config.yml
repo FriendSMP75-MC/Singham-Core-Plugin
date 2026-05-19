@@ -1,0 +1,33 @@
+database:
+  host: localhost
+  port: 5432
+  database: singham_core
+  username: youruser
+  password: yourpassword
+  minimumPoolSize: 2
+  maximumPoolSize: 10
+
+messages:
+  prefix: '&8[&2Singham&8] '
+  no-permission: '&cYou do not have permission to execute that command.'
+  player-not-found: '&cPlayer not found.'
+  invalid-usage: '&cInvalid command usage.'
+  action-success: '&aAction completed successfully.'
+  already-punished: '&cThat player already has an active punishment.'
+  ban-success: '&c{player} has been banned for {reason}.'
+  tempban-success: '&c{player} has been temporarily banned for {duration}.'
+  ipban-success: '&cIP address {ip} has been banned.'
+  mute-success: '&c{player} has been muted.'
+  tempmute-success: '&c{player} has been temporarily muted for {duration}.'
+  kick-success: '&c{player} has been kicked for {reason}.'
+  warn-success: '&c{player} has been warned for {reason}.'
+  report-success: '&aYour report has been submitted.'
+  history-header: '&6Punishment history for {player}:'
+  no-history: '&eNo punishment history was found.'
+  check-profile: '&6Moderation profile for {player}:'
+  rep-success: '&aReputation updated for {player}. Change: {amount}. New score: {score}.'
+  note-success: '&aNote added to {player} profile.'
+  stafflog-header: '&6Staff logs:'
+
+storage:
+  cache-refresh-seconds: 30
