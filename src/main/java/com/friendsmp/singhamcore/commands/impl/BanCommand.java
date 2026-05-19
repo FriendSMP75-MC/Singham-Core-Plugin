@@ -5,6 +5,7 @@ import com.friendsmp.singhamcore.commands.BaseCommand;
 import com.friendsmp.singhamcore.managers.PunishmentManager;
 import com.friendsmp.singhamcore.punishments.PunishmentType;
 import com.friendsmp.singhamcore.utils.TextUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -54,7 +55,7 @@ public class BanCommand extends BaseCommand {
                     if (target.isOnline()) {
                         Player online = target.getPlayer();
                         if (online != null) {
-                            online.kick(TextUtils.color("&cYou have been banned: " + reason));
+                            online.kick(Component.text(TextUtils.color("&cYou have been banned: " + reason)));
                         }
                     }
                 });
