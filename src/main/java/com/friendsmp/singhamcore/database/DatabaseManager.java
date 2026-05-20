@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.flywaydb.core.Flyway;
+
 public class DatabaseManager {
 
     private final SinghamCorePlugin plugin;
@@ -46,14 +48,19 @@ public class DatabaseManager {
         try {
             Class.forName("org.postgresql.Driver");
             source = new HikariDataSource(hikariConfig);
-            try (Connection connection = source.getConnection()) {
-                createTables(connection);
-            }
+
+            Flyway flyway = Flyway.configure()
+                    .dataSource(source)
+                    .locations("classpath:db/migration")
+                    .baselineOnMigrate(true)
+                    .load();
+            flyway.migrate();
+
             isAvailable = true;
         } catch (ClassNotFoundException exception) {
             plugin.getLogger().severe("PostgreSQL driver not found: " + exception.getMessage());
         } catch (Exception exception) {
-            plugin.getLogger().severe("Unable to initialize database connection: " + exception.getMessage());
+            plugin.getLogger().severe("Unable to initialize/migrate database: " + exception.getMessage());
             if (source != null) {
                 source.close();
                 source = null;
@@ -68,22 +75,9 @@ public class DatabaseManager {
         this.available = isAvailable;
     }
 
-    private void createTables(Connection connection) {
-        try {
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS players (uuid UUID PRIMARY KEY, name TEXT NOT NULL);")
-                    .execute();
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS punishments (id SERIAL PRIMARY KEY, player_uuid UUID NOT NULL, player_name TEXT NOT NULL, punishment_type TEXT NOT NULL, moderator TEXT NOT NULL, reason TEXT NOT NULL, duration BIGINT, created_at TIMESTAMP NOT NULL, expires_at TIMESTAMP, ip_address TEXT, active BOOLEAN NOT NULL);")
-                    .execute();
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS reputation (player_uuid UUID PRIMARY KEY, score INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMP NOT NULL);")
-                    .execute();
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS reports (id SERIAL PRIMARY KEY, reporter_uuid UUID NOT NULL, reported_uuid UUID NOT NULL, reported_name TEXT NOT NULL, reason TEXT NOT NULL, created_at TIMESTAMP NOT NULL, status TEXT NOT NULL);")
-                    .execute();
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS staff_logs (id SERIAL PRIMARY KEY, staff_uuid UUID NOT NULL, action TEXT NOT NULL, target_uuid UUID, target_name TEXT, reason TEXT, created_at TIMESTAMP NOT NULL);")
-                    .execute();
-        } catch (SQLException exception) {
-            plugin.getLogger().severe("Unable to initialize database tables: " + exception.getMessage());
-        }
-    }
+    // Table creation is handled by Flyway migrations.
+
+
 
     public Connection getConnection() throws SQLException {
         if (!available || dataSource == null) {
