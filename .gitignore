@@ -1,6 +1,2 @@
-.gradle/
-build/
-gradle-8.4-bin/
-gradle-8.4-bin.zip
-*.iml
-.idea/
+﻿gradle-*.zip
+gradle-*/

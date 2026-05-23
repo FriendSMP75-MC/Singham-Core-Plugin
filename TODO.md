@@ -61,3 +61,10 @@
 - [ ] Add integration tests for duration parsing, parsing/validation, and SQL queries
 - [ ] Run `./gradlew test` and `./gradlew build`
 
+## Feature: Broadcast (to be added)
+- [ ] Add `/broadcast <message>` and optional `/broadcaststaff <message>`
+- [ ] Add permission checks (`singham.broadcast`, `singham.broadcaststaff`)
+- [ ] Add configurable format/messages via `messages.yml`
+- [ ] Add async-safe execution and proper audit/logging (staff_logs)
+
+
