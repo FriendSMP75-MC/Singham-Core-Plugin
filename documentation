@@ -39,14 +39,20 @@ Technology	Usage
 Java 21	Core language
 Paper API	Minecraft server API
 Gradle	Build system
-PostgreSQL	Database
+PostgreSQL	Database (primary)
+MySQL / MariaDB	Database (network sync)
+SQLite	Local fallback database
 HikariCP	Connection pooling
 Supabase	Hosted database support
 Commands
 /ban
+/unban
+/banlist
 /tempban
+/tempbanlist
 /ipban
 /mute
+/unmute
 /tempmute
 /kick
 /warn
@@ -56,8 +62,10 @@ Commands
 /report
 
 /rep
-/note
+/note add|remove
 /stafflog
+/chatlock
+/vanish
 Architecture
 src/
 ├── api/

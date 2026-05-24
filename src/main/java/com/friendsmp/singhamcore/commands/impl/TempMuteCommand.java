@@ -4,12 +4,12 @@ import com.friendsmp.singhamcore.SinghamCorePlugin;
 import com.friendsmp.singhamcore.commands.BaseCommand;
 import com.friendsmp.singhamcore.managers.PunishmentManager;
 import com.friendsmp.singhamcore.punishments.PunishmentType;
+import com.friendsmp.singhamcore.utils.DurationUtils;
 import com.friendsmp.singhamcore.utils.TextUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 public class TempMuteCommand extends BaseCommand {
 
@@ -35,7 +35,12 @@ public class TempMuteCommand extends BaseCommand {
             return true;
         }
 
-        long durationMillis = parseDuration(args[1]);
+        if (punishmentManager.hasActivePunishment(target.getUniqueId(), PunishmentType.MUTE, PunishmentType.TEMPMUTE)) {
+            sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
+            return true;
+        }
+
+        long durationMillis = DurationUtils.parseDuration(args[1]);
         if (durationMillis <= 0) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
@@ -46,20 +51,15 @@ public class TempMuteCommand extends BaseCommand {
 
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPMUTE,
                 sender.getName(), reason, durationMillis, expiresAt, null, true)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempmute-success").replace("{player}", target.getName()).replace("{duration}", args[1]))));
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    String formattedDuration = DurationUtils.formatDuration(durationMillis);
+                    sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempmute-success").replace("{player}", target.getName() == null ? args[0] : target.getName()).replace("{duration}", formattedDuration)));
+                    if (target.isOnline() && target.getPlayer() != null) {
+                        target.getPlayer().sendMessage(TextUtils.color(plugin.getConfig().getString("messages.tempmute-target")
+                                .replace("{duration}", formattedDuration)
+                                .replace("{reason}", reason)));
+                    }
+                }));
         return true;
-    }
-
-    private long parseDuration(String input) {
-        if (input.endsWith("d")) {
-            return Long.parseLong(input.replace("d", "")) * TimeUnit.DAYS.toMillis(1);
-        }
-        if (input.endsWith("h")) {
-            return Long.parseLong(input.replace("h", "")) * TimeUnit.HOURS.toMillis(1);
-        }
-        if (input.endsWith("m")) {
-            return Long.parseLong(input.replace("m", "")) * TimeUnit.MINUTES.toMillis(1);
-        }
-        return 0L;
     }
 }

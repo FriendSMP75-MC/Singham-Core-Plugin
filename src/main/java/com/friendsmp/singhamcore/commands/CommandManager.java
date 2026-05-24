@@ -2,8 +2,11 @@ package com.friendsmp.singhamcore.commands;
 
 import com.friendsmp.singhamcore.SinghamCorePlugin;
 import com.friendsmp.singhamcore.commands.impl.BanCommand;
+import com.friendsmp.singhamcore.commands.impl.BanListCommand;
+import com.friendsmp.singhamcore.commands.impl.ChatLockCommand;
 import com.friendsmp.singhamcore.commands.impl.CheckCommand;
 import com.friendsmp.singhamcore.commands.impl.HistoryCommand;
+import com.friendsmp.singhamcore.commands.impl.IpBanCommand;
 import com.friendsmp.singhamcore.commands.impl.KickCommand;
 import com.friendsmp.singhamcore.commands.impl.MuteCommand;
 import com.friendsmp.singhamcore.commands.impl.NoteCommand;
@@ -11,7 +14,11 @@ import com.friendsmp.singhamcore.commands.impl.RepCommand;
 import com.friendsmp.singhamcore.commands.impl.ReportCommand;
 import com.friendsmp.singhamcore.commands.impl.StaffLogCommand;
 import com.friendsmp.singhamcore.commands.impl.TempBanCommand;
+import com.friendsmp.singhamcore.commands.impl.TempBanListCommand;
 import com.friendsmp.singhamcore.commands.impl.TempMuteCommand;
+import com.friendsmp.singhamcore.commands.impl.UnbanCommand;
+import com.friendsmp.singhamcore.commands.impl.UnmuteCommand;
+import com.friendsmp.singhamcore.commands.impl.VanishCommand;
 import com.friendsmp.singhamcore.commands.impl.WarnCommand;
 import com.friendsmp.singhamcore.utils.TextUtils;
 import org.bukkit.command.Command;
@@ -33,8 +40,13 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         this.plugin = plugin;
         registerCommand(new BanCommand(plugin));
         registerCommand(new TempBanCommand(plugin));
+        registerCommand(new BanListCommand(plugin));
+        registerCommand(new TempBanListCommand(plugin));
+        registerCommand(new IpBanCommand(plugin));
+        registerCommand(new UnbanCommand(plugin));
         registerCommand(new MuteCommand(plugin));
         registerCommand(new TempMuteCommand(plugin));
+        registerCommand(new UnmuteCommand(plugin));
         registerCommand(new KickCommand(plugin));
         registerCommand(new WarnCommand(plugin));
         registerCommand(new HistoryCommand(plugin));
@@ -43,6 +55,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         registerCommand(new RepCommand(plugin));
         registerCommand(new NoteCommand(plugin));
         registerCommand(new StaffLogCommand(plugin));
+        registerCommand(new ChatLockCommand(plugin));
+        registerCommand(new VanishCommand(plugin));
     }
 
     private void registerCommand(BaseCommand command) {

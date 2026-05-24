@@ -6,7 +6,6 @@ import com.friendsmp.singhamcore.utils.TextUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.UUID;
 
 public class RepCommand extends BaseCommand {
 
@@ -39,7 +38,7 @@ public class RepCommand extends BaseCommand {
         }
 
         plugin.getReputationManager().adjustReputation(target.getUniqueId(), delta)
-                .thenAccept(score -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.rep-success").replace("{player}", target.getName()).replace("{amount}", String.valueOf(delta)).replace("{score}", String.valueOf(score)))));
+                .thenAccept(score -> Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.rep-success").replace("{player}", target.getName() == null ? args[0] : target.getName()).replace("{amount}", String.valueOf(delta)).replace("{score}", String.valueOf(score))))));
         return true;
     }
 }

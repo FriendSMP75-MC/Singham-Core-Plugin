@@ -4,15 +4,14 @@ import com.friendsmp.singhamcore.SinghamCorePlugin;
 import com.friendsmp.singhamcore.commands.BaseCommand;
 import com.friendsmp.singhamcore.managers.PunishmentManager;
 import com.friendsmp.singhamcore.punishments.PunishmentType;
+import com.friendsmp.singhamcore.utils.DurationUtils;
 import com.friendsmp.singhamcore.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 public class TempBanCommand extends BaseCommand {
 
@@ -38,12 +37,12 @@ public class TempBanCommand extends BaseCommand {
             return true;
         }
 
-        if (punishmentManager.isPlayerPunished(target.getUniqueId())) {
+        if (punishmentManager.hasActivePunishment(target.getUniqueId(), PunishmentType.BAN, PunishmentType.TEMPBAN)) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
             return true;
         }
 
-        long durationMillis = parseDuration(args[1]);
+        long durationMillis = DurationUtils.parseDuration(args[1]);
         if (durationMillis <= 0) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
@@ -55,31 +54,21 @@ public class TempBanCommand extends BaseCommand {
 
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPBAN,
                 moderator, reason, durationMillis, expiresAt, null, true)
-                .thenRun(() -> {
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    String formattedDuration = DurationUtils.formatDuration(durationMillis);
                     String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempban-success")
-                            .replace("{player}", target.getName())
-                            .replace("{duration}", args[1]));
+                            .replace("{player}", target.getName() == null ? args[0] : target.getName())
+                            .replace("{duration}", formattedDuration));
                     sender.sendMessage(message);
                     if (target.isOnline()) {
                         Player online = target.getPlayer();
                         if (online != null) {
-                            online.kick(Component.text(TextUtils.color("&cYou have been temporarily banned for " + args[1] + ": " + reason)));
+                            online.kick(Component.text(TextUtils.color(plugin.getConfig().getString("messages.tempban-kick-message")
+                                    .replace("{duration}", formattedDuration)
+                                    .replace("{reason}", reason))));
                         }
                     }
-                });
+                }));
         return true;
-    }
-
-    private long parseDuration(String input) {
-        if (input.endsWith("d")) {
-            return Long.parseLong(input.replace("d", "")) * TimeUnit.DAYS.toMillis(1);
-        }
-        if (input.endsWith("h")) {
-            return Long.parseLong(input.replace("h", "")) * TimeUnit.HOURS.toMillis(1);
-        }
-        if (input.endsWith("m")) {
-            return Long.parseLong(input.replace("m", "")) * TimeUnit.MINUTES.toMillis(1);
-        }
-        return 0L;
     }
 }

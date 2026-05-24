@@ -2,10 +2,12 @@ package com.friendsmp.singhamcore;
 
 import com.friendsmp.singhamcore.commands.CommandManager;
 import com.friendsmp.singhamcore.database.DatabaseManager;
+import com.friendsmp.singhamcore.managers.ChatLockManager;
 import com.friendsmp.singhamcore.managers.PunishmentManager;
 import com.friendsmp.singhamcore.managers.ReputationManager;
 import com.friendsmp.singhamcore.managers.ReportManager;
 import com.friendsmp.singhamcore.managers.StaffLogManager;
+import com.friendsmp.singhamcore.managers.VanishManager;
 import com.friendsmp.singhamcore.utils.ConfigUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,6 +19,8 @@ public final class SinghamCorePlugin extends JavaPlugin {
     private ReputationManager reputationManager;
     private ReportManager reportManager;
     private StaffLogManager staffLogManager;
+    private ChatLockManager chatLockManager;
+    private VanishManager vanishManager;
     private CommandManager commandManager;
 
     @Override
@@ -30,6 +34,8 @@ public final class SinghamCorePlugin extends JavaPlugin {
         reputationManager = new ReputationManager(this, databaseManager);
         reportManager = new ReportManager(this, databaseManager);
         staffLogManager = new StaffLogManager(this, databaseManager);
+        chatLockManager = new ChatLockManager();
+        vanishManager = new VanishManager(this);
         commandManager = new CommandManager(this);
 
         punishmentManager.loadActivePunishments();
@@ -70,7 +76,17 @@ public final class SinghamCorePlugin extends JavaPlugin {
         return staffLogManager;
     }
 
+    public ChatLockManager getChatLockManager() {
+        return chatLockManager;
+    }
+
+    public VanishManager getVanishManager() {
+        return vanishManager;
+    }
+
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.PlayerConnectionListener(punishmentManager), this);
+        getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.PlayerConnectionListener(this, punishmentManager), this);
+        getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.ChatListener(this, punishmentManager, chatLockManager), this);
+        getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.VanishListener(vanishManager), this);
     }
 }

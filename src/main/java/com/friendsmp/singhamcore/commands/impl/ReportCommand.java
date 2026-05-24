@@ -38,7 +38,7 @@ public class ReportCommand extends BaseCommand {
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         ReportEntry report = new ReportEntry(reporter.getUniqueId(), target.getUniqueId(), target.getName(), reason, Instant.now(), "OPEN");
         reportManager.submitReport(report)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-success"))));
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-success")))));
         return true;
     }
 }

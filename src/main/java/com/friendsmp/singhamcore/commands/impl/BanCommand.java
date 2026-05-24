@@ -7,11 +7,9 @@ import com.friendsmp.singhamcore.punishments.PunishmentType;
 import com.friendsmp.singhamcore.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.time.Instant;
 import java.util.UUID;
 
 public class BanCommand extends BaseCommand {
@@ -38,7 +36,7 @@ public class BanCommand extends BaseCommand {
             return true;
         }
 
-        if (punishmentManager.isPlayerPunished(target.getUniqueId())) {
+        if (punishmentManager.hasActivePunishment(target.getUniqueId(), PunishmentType.BAN, PunishmentType.TEMPBAN)) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
             return true;
         }
@@ -47,18 +45,19 @@ public class BanCommand extends BaseCommand {
         String moderator = sender.getName();
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.BAN,
                 moderator, reason, 0L, null, null, true)
-                .thenRun(() -> {
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
                     String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.ban-success")
-                            .replace("{player}", target.getName())
+                            .replace("{player}", target.getName() == null ? args[0] : target.getName())
                             .replace("{reason}", reason));
                     sender.sendMessage(message);
                     if (target.isOnline()) {
                         Player online = target.getPlayer();
                         if (online != null) {
-                            online.kick(Component.text(TextUtils.color("&cYou have been banned: " + reason)));
+                            online.kick(Component.text(TextUtils.color(plugin.getConfig().getString("messages.ban-kick-message")
+                                    .replace("{reason}", reason))));
                         }
                     }
-                });
+                }));
         return true;
     }
 }

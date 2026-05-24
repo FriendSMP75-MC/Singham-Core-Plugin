@@ -32,10 +32,21 @@ public class MuteCommand extends BaseCommand {
             return true;
         }
 
+        if (punishmentManager.hasActivePunishment(target.getUniqueId(), PunishmentType.MUTE, PunishmentType.TEMPMUTE)) {
+            sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
+            return true;
+        }
+
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.MUTE,
                 sender.getName(), reason, 0L, null, null, true)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.mute-success").replace("{player}", target.getName()))));
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.mute-success").replace("{player}", target.getName() == null ? args[0] : target.getName())));
+                    if (target.isOnline() && target.getPlayer() != null) {
+                        target.getPlayer().sendMessage(TextUtils.color(plugin.getConfig().getString("messages.mute-target")
+                                .replace("{reason}", reason)));
+                    }
+                }));
         return true;
     }
 }

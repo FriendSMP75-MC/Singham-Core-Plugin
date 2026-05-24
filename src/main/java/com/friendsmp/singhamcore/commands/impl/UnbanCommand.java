@@ -8,20 +8,22 @@ import com.friendsmp.singhamcore.utils.TextUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-public class WarnCommand extends BaseCommand {
+import java.util.EnumSet;
+
+public class UnbanCommand extends BaseCommand {
 
     private final SinghamCorePlugin plugin;
     private final PunishmentManager punishmentManager;
 
-    public WarnCommand(SinghamCorePlugin plugin) {
-        super("warn", "singhamcore.command.warn", "/warn <player> <reason>");
+    public UnbanCommand(SinghamCorePlugin plugin) {
+        super("unban", "singhamcore.command.unban", "/unban <player>");
         this.plugin = plugin;
         this.punishmentManager = plugin.getPunishmentManager();
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (args.length < 2) {
+        if (args.length != 1) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
         }
@@ -32,15 +34,11 @@ public class WarnCommand extends BaseCommand {
             return true;
         }
 
-        String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
-        punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.WARN,
-                sender.getName(), reason, 0L, null, null, false)
-                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
-                    sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.warn-success").replace("{player}", target.getName() == null ? args[0] : target.getName()).replace("{reason}", reason)));
-                    if (target.isOnline() && target.getPlayer() != null) {
-                        target.getPlayer().sendMessage(TextUtils.color(plugin.getConfig().getString("messages.warn-target")
-                                .replace("{reason}", reason)));
-                    }
+        punishmentManager.revokePunishments(target.getUniqueId(), EnumSet.of(PunishmentType.BAN, PunishmentType.TEMPBAN), sender.getName())
+                .thenAccept(revoked -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    String key = revoked ? "messages.unban-success" : "messages.not-banned";
+                    sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString(key)
+                            .replace("{player}", target.getName() == null ? args[0] : target.getName())));
                 }));
         return true;
     }

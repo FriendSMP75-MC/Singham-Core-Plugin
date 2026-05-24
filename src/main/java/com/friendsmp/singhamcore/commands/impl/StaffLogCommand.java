@@ -4,6 +4,7 @@ import com.friendsmp.singhamcore.SinghamCorePlugin;
 import com.friendsmp.singhamcore.commands.BaseCommand;
 import com.friendsmp.singhamcore.models.StaffLogEntry;
 import com.friendsmp.singhamcore.utils.TextUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 public class StaffLogCommand extends BaseCommand {
@@ -25,12 +26,12 @@ public class StaffLogCommand extends BaseCommand {
             }
         }
 
-        plugin.getDatabaseManager().loadStaffLogsAsync(limit).thenAccept(logs -> {
+        plugin.getDatabaseManager().loadStaffLogsAsync(limit).thenAccept(logs -> Bukkit.getScheduler().runTask(plugin, () -> {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.stafflog-header")));
             for (StaffLogEntry entry : logs) {
                 sender.sendMessage(TextUtils.color("&7[&e" + entry.getAction() + "&7] &f" + entry.getTargetName() + " &7by &f" + entry.getStaffUuid() + " &7- &f" + entry.getReason()));
             }
-        });
+        }));
         return true;
     }
 }

@@ -18,10 +18,12 @@ public class Punishment {
     private final Instant expiresAt;
     private final String ipAddress;
     private boolean active;
+    private Instant revokedAt;
+    private String revokedBy;
 
     public Punishment(long id, UUID playerUuid, String playerName, PunishmentType type, String moderator,
                       String reason, long duration, Instant createdAt, Instant expiresAt,
-                      String ipAddress, boolean active) {
+                      String ipAddress, boolean active, Instant revokedAt, String revokedBy) {
         this.id = id;
         this.playerUuid = playerUuid;
         this.playerName = playerName;
@@ -33,6 +35,8 @@ public class Punishment {
         this.expiresAt = expiresAt;
         this.ipAddress = ipAddress;
         this.active = active;
+        this.revokedAt = revokedAt;
+        this.revokedBy = revokedBy;
     }
 
     public long getId() {
@@ -85,5 +89,21 @@ public class Punishment {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Instant getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(Instant revokedAt) {
+        this.revokedAt = revokedAt;
+    }
+
+    public String getRevokedBy() {
+        return revokedBy;
+    }
+
+    public void setRevokedBy(String revokedBy) {
+        this.revokedBy = revokedBy;
     }
 }
