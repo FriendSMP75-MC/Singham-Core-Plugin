@@ -31,42 +31,48 @@ public class TempBanCommand extends BaseCommand {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
         }
-
-        var target = Bukkit.getOfflinePlayer(args[0]);
-        if (target == null || target.getUniqueId() == null) {
-            sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.player-not-found")));
-            return true;
-        }
-
-        if (punishmentManager.isPlayerPunished(target.getUniqueId())) {
-            sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
-            return true;
-        }
-
+        String name = args[0];
         long durationMillis = parseDuration(args[1]);
         if (durationMillis <= 0) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
         }
-
+        if (sender instanceof org.bukkit.entity.Player) {
+            org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
+            if (!plugin.getAuthService().isAuthenticated(p.getUniqueId())) {
+                sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + "&cYou must authenticate with /staffauth <pin> before moderating."));
+                return true;
+            }
+        }
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 2, args.length));
-        String moderator = sender.getName();
-        Instant expiresAt = Instant.now().plusMillis(durationMillis);
+        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> {
+            if (uuid == null) {
+                sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.player-not-found")));
+                return;
+            }
+            var target = Bukkit.getOfflinePlayer(uuid);
+            if (punishmentManager.isPlayerPunished(target.getUniqueId())) {
+                sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.already-punished")));
+                return;
+            }
+            String moderator = sender.getName();
+            Instant expiresAt = Instant.now().plusMillis(durationMillis);
 
-        punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPBAN,
-                moderator, reason, durationMillis, expiresAt, null, true)
-                .thenRun(() -> {
-                    String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempban-success")
-                            .replace("{player}", target.getName())
-                            .replace("{duration}", args[1]));
-                    sender.sendMessage(message);
-                    if (target.isOnline()) {
-                        Player online = target.getPlayer();
-                        if (online != null) {
-                            online.kick(Component.text(TextUtils.color("&cYou have been temporarily banned for " + args[1] + ": " + reason)));
+            punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPBAN,
+                    moderator, reason, durationMillis, expiresAt, null, true)
+                    .thenRun(() -> {
+                        String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempban-success")
+                                .replace("{player}", target.getName())
+                                .replace("{duration}", args[1]));
+                        sender.sendMessage(message);
+                        if (target.isOnline()) {
+                            Player online = target.getPlayer();
+                            if (online != null) {
+                                online.kick(Component.text(TextUtils.color("&cYou have been temporarily banned for " + args[1] + ": " + reason)));
+                            }
                         }
-                    }
-                });
+                    });
+        });
         return true;
     }
 

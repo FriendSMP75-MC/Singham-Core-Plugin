@@ -12,5 +12,6 @@ public interface PunishmentRepository {
     CompletableFuture<List<Punishment>> loadActivePunishments();
     CompletableFuture<Optional<Punishment>> findActiveByPlayerUuid(UUID playerUuid);
     CompletableFuture<Void> updateActive(long id, boolean active);
+    CompletableFuture<Void> updateActiveAndRevoked(long id, boolean active, boolean revoked);
     CompletableFuture<List<Punishment>> loadHistory(UUID playerUuid);
 }

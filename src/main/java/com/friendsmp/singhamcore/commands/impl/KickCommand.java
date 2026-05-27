@@ -2,6 +2,8 @@ package com.friendsmp.singhamcore.commands.impl;
 
 import com.friendsmp.singhamcore.SinghamCorePlugin;
 import com.friendsmp.singhamcore.commands.BaseCommand;
+import com.friendsmp.singhamcore.managers.PunishmentManager;
+import com.friendsmp.singhamcore.punishments.PunishmentType;
 import com.friendsmp.singhamcore.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -11,10 +13,12 @@ import org.bukkit.entity.Player;
 public class KickCommand extends BaseCommand {
 
     private final SinghamCorePlugin plugin;
+    private final PunishmentManager punishmentManager;
 
     public KickCommand(SinghamCorePlugin plugin) {
         super("kick", "singhamcore.command.kick", "/kick <player> <reason>");
         this.plugin = plugin;
+        this.punishmentManager = plugin.getPunishmentManager();
     }
 
     @Override
@@ -30,9 +34,15 @@ public class KickCommand extends BaseCommand {
             return true;
         }
 
+        if (!plugin.ensureStaffAuth(sender)) {
+            return true;
+        }
+
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         target.kick(Component.text(TextUtils.color("&cKicked: " + reason)));
-        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.kick-success").replace("{player}", target.getName()).replace("{reason}", reason)));
+        punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.KICK,
+                sender.getName(), reason, 0L, null, null, false)
+                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.kick-success").replace("{player}", target.getName()).replace("{reason}", reason))));
         return true;
     }
 }

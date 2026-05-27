@@ -17,6 +17,10 @@ public class StaffLogCommand extends BaseCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
+        if (!plugin.ensureStaffAuth(sender)) {
+            return true;
+        }
+
         int limit = 10;
         if (args.length == 1) {
             try {

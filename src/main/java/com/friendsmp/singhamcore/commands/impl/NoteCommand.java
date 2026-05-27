@@ -28,6 +28,9 @@ public class NoteCommand extends BaseCommand {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
             return true;
         }
+        if (!plugin.ensureStaffAuth(sender)) {
+            return true;
+        }
 
         var target = Bukkit.getOfflinePlayer(args[0]);
         if (target == null || target.getUniqueId() == null) {

@@ -46,10 +46,19 @@ commands:
     description: Report a player.
     usage: /report <player> <reason>
     permission: singhamcore.command.report
+  reports:
+    description: List open player reports.
+    usage: /reports [page]
+    permission: singhamcore.command.reports
   rep:
     description: Manage player reputation.
     usage: /rep <player> <amount> [reason]
     permission: singhamcore.command.rep
+  vanish:
+    description: Toggle vanish mode.
+    usage: /vanish [silent]
+    permission: singhamcore.command.vanish
+    aliases: [v]
   note:
     description: Add an internal staff note.
     usage: /note <player> <note>
@@ -58,6 +67,22 @@ commands:
     description: View staff logs.
     usage: /stafflog [page]
     permission: singhamcore.command.stafflog
+  unban:
+    description: Unban a player.
+    usage: /unban <player>
+    permission: singhamcore.command.unban
+  unmute:
+    description: Unmute a player.
+    usage: /unmute <player>
+    permission: singhamcore.command.unmute
+  chatlock:
+    description: Lock or unlock global chat.
+    usage: /chatlock <on|off|status>
+    permission: singhamcore.command.chatlock
+  staffauth:
+    description: Authenticate as staff with a PIN.
+    usage: /staffauth <pin>
+    permission: singhamcore.command.staffauth
 permissions:
   singhamcore.command.*:
     description: Grants access to all Singham Core commands.
@@ -92,12 +117,30 @@ permissions:
   singhamcore.command.report:
     description: Submit player reports.
     default: op
+  singhamcore.command.reports:
+    description: View open reports.
+    default: op
   singhamcore.command.rep:
     description: Manage reputation.
+    default: op
+  singhamcore.command.vanish:
+    description: Use vanish mode.
     default: op
   singhamcore.command.note:
     description: Add staff notes.
     default: op
   singhamcore.command.stafflog:
     description: View staff logs.
+    default: op
+  singhamcore.command.unban:
+    description: Use the unban command.
+    default: op
+  singhamcore.command.unmute:
+    description: Use the unmute command.
+    default: op
+  singhamcore.command.chatlock:
+    description: Manage global chat lock.
+    default: op
+  singhamcore.command.staffauth:
+    description: Authenticate session for staff commands.
     default: op

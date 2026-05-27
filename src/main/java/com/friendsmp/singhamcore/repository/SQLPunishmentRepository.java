@@ -27,9 +27,9 @@ public class SQLPunishmentRepository implements PunishmentRepository {
     public CompletableFuture<Void> save(Punishment punishment) {
         if (!databaseManager.isAvailable()) return CompletableFuture.completedFuture(null);
         return AsyncDatabaseExecutor.runAsync(() -> {
+            String sql = "INSERT INTO punishments (player_uuid, player_name, punishment_type, moderator_uuid, moderator_name, reason, duration, created_at, expires_at, ip_address, active, revoked, server_origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (Connection connection = databaseManager.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "INSERT INTO punishments (player_uuid, player_name, punishment_type, moderator_uuid, moderator_name, reason, duration, created_at, expires_at, ip_address, active, revoked, server_origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;")) {
+                 PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 statement.setObject(1, punishment.getPlayerUuid());
                 statement.setString(2, punishment.getPlayerName());
                 statement.setString(3, punishment.getType().name());
@@ -37,14 +37,18 @@ public class SQLPunishmentRepository implements PunishmentRepository {
                 statement.setString(5, punishment.getModerator());
                 statement.setString(6, punishment.getReason());
                 statement.setLong(7, punishment.getDuration());
-                statement.setObject(8, punishment.getCreatedAt());
-                statement.setObject(9, punishment.getExpiresAt());
+                statement.setLong(8, punishment.getCreatedAt().toEpochMilli());
+                if (punishment.getExpiresAt() != null) statement.setLong(9, punishment.getExpiresAt().toEpochMilli()); else statement.setObject(9, null);
                 statement.setString(10, punishment.getIpAddress());
                 statement.setBoolean(11, punishment.isActive());
                 statement.setBoolean(12, false);
                 statement.setString(13, null);
-                var rs = statement.executeQuery();
-                if (rs.next()) punishment.setId(rs.getLong("id"));
+                statement.executeUpdate();
+                try (ResultSet keys = statement.getGeneratedKeys()) {
+                    if (keys != null && keys.next()) {
+                        punishment.setId(keys.getLong(1));
+                    }
+                }
             } catch (SQLException ex) {
                 databaseManager.getPlugin().getLogger().severe("Failed to save punishment: " + ex.getMessage());
             }
@@ -96,6 +100,22 @@ public class SQLPunishmentRepository implements PunishmentRepository {
                 statement.executeUpdate();
             } catch (SQLException ex) {
                 databaseManager.getPlugin().getLogger().severe("Failed to update punishment active: " + ex.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> updateActiveAndRevoked(long id, boolean active, boolean revoked) {
+        if (!databaseManager.isAvailable()) return CompletableFuture.completedFuture(null);
+        return AsyncDatabaseExecutor.runAsync(() -> {
+            try (Connection connection = databaseManager.getConnection();
+                 PreparedStatement statement = connection.prepareStatement("UPDATE punishments SET active = ?, revoked = ? WHERE id = ?;")) {
+                statement.setBoolean(1, active);
+                statement.setBoolean(2, revoked);
+                statement.setLong(3, id);
+                statement.executeUpdate();
+            } catch (SQLException ex) {
+                databaseManager.getPlugin().getLogger().severe("Failed to update punishment status: " + ex.getMessage());
             }
         });
     }
