@@ -27,7 +27,7 @@ public class PunishmentService {
         this.repository = repository;
     }
 
-    public CompletableFuture<Void> loadActivePunishments() {
+    public CompletableFuture<Integer> loadActivePunishments() {
         return repository.loadActivePunishments().thenAccept(list -> {
             for (Punishment p : list) {
                 if (p.getType() == PunishmentType.IP_BAN && p.getIpAddress() != null) {
@@ -37,7 +37,7 @@ public class PunishmentService {
                 }
             }
             scheduleExpirationTask();
-        });
+        }).thenApply(v -> activeCache.size() + activeIpBanCache.size());
     }
 
     private void scheduleExpirationTask() {

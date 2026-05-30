@@ -55,20 +55,20 @@ public class ReportCommand extends BaseCommand {
             UUID staffUuid = sender instanceof Player player ? player.getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
             if (mode.equals("claim")) {
                 reportManager.claimReport(reportId, staffUuid)
-                        .thenRun(() -> {
+                        .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-claim-success").replace("{id}", String.valueOf(reportId))));
                             plugin.getAuditLogger().log("report.claim", "Report claimed", Map.of("staff", sender.getName(), "reportId", String.valueOf(reportId)));
                             plugin.getStaffLogManager().recordAction(new StaffLogEntry(staffUuid, "REPORT_CLAIM", null, null, "Claimed report " + reportId, Instant.now()));
-                        });
+                        }));
                 return true;
             }
             if (mode.equals("resolve")) {
                 reportManager.resolveReport(reportId, staffUuid)
-                        .thenRun(() -> {
+                        .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-resolve-success").replace("{id}", String.valueOf(reportId))));
                             plugin.getAuditLogger().log("report.resolve", "Report resolved", Map.of("staff", sender.getName(), "reportId", String.valueOf(reportId)));
                             plugin.getStaffLogManager().recordAction(new StaffLogEntry(staffUuid, "REPORT_RESOLVE", null, null, "Resolved report " + reportId, Instant.now()));
-                        });
+                        }));
                 return true;
             }
             if (mode.equals("comment")) {
@@ -78,11 +78,11 @@ public class ReportCommand extends BaseCommand {
                 }
                 String note = String.join(" ", java.util.Arrays.copyOfRange(args, 2, args.length));
                 reportManager.addComment(reportId, staffUuid, note)
-                        .thenRun(() -> {
+                        .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-comment-success").replace("{id}", String.valueOf(reportId))));
                             plugin.getAuditLogger().log("report.comment", "Comment added to report", Map.of("staff", sender.getName(), "reportId", String.valueOf(reportId)));
                             plugin.getStaffLogManager().recordAction(new StaffLogEntry(staffUuid, "REPORT_COMMENT", null, null, "Commented on report " + reportId + ": " + note, Instant.now()));
-                        });
+                        }));
                 return true;
             }
         }
@@ -101,7 +101,7 @@ public class ReportCommand extends BaseCommand {
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         ReportEntry report = new ReportEntry(reporter.getUniqueId(), target.getUniqueId(), target.getName(), reason, Instant.now(), "OPEN");
         reportManager.submitReport(report)
-                .thenRun(() -> {
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                     sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-success")));
                     String notification = plugin.getConfig().getString("messages.report-notification", "&6New report against {target} by {reporter}: {reason}")
                             .replace("{target}", target.getName())
@@ -111,7 +111,7 @@ public class ReportCommand extends BaseCommand {
                             .filter(player -> player.hasPermission("singhamcore.command.reports"))
                             .forEach(player -> player.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + notification)));
                     plugin.getAuditLogger().log("report.submit", "Report submitted", Map.of("reporter", reporter.getName(), "reported", target.getName(), "reason", reason));
-                });
+                }));
         return true;
     }
 }

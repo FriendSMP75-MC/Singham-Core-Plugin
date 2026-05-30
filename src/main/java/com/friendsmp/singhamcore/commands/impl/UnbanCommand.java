@@ -35,16 +35,17 @@ public class UnbanCommand extends BaseCommand {
             }
         }
         String name = args[0];
-        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> {
+        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
             if (uuid == null) {
                 sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.player-not-found")));
                 return;
             }
             UUID staffUuid = (sender instanceof Player) ? ((Player) sender).getUniqueId() : null;
             punishmentManager.revokePunishment(staffUuid, uuid).thenRun(() -> {
-                sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + "&aPlayer unbanned."));
+                com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + "&aPlayer unbanned.")));
             });
-        });
+        }));
         return true;
     }
 }

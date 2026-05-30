@@ -54,8 +54,9 @@ public class RepCommand extends BaseCommand {
                     return true;
                 }
             }
+            final int requestedPage = page;
             plugin.getReputationManager().loadTransactionHistory(target.getUniqueId(), Integer.MAX_VALUE, 0)
-                    .thenAccept(entries -> {
+                    .thenAccept(entries -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                         if (entries.isEmpty()) {
                             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.reputation-history-none").replace("{player}", target.getName())));
                             return;
@@ -68,8 +69,8 @@ public class RepCommand extends BaseCommand {
                             }
                             lines.add("&d[" + (tx.getDelta() >= 0 ? "+" : "") + tx.getDelta() + "] &7by &f" + staffName + " &7» &f" + tx.getReason());
                         }
-                        PaginationUtil.sendPaged(sender, lines, page, 8, TextUtils.color(plugin.getConfig().getString("messages.reputation-history-header").replace("{player}", target.getName())));
-                    });
+                        PaginationUtil.sendPaged(sender, lines, requestedPage, 8, TextUtils.color(plugin.getConfig().getString("messages.reputation-history-header").replace("{player}", target.getName())));
+                    }));
             return true;
         }
 
@@ -83,8 +84,9 @@ public class RepCommand extends BaseCommand {
                     return true;
                 }
             }
+            final int requestedPage = page;
             plugin.getReputationManager().loadLeaderboard(100, 0)
-                    .thenAccept(records -> {
+                    .thenAccept(records -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                         if (records.isEmpty()) {
                             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.reputation-top-none")));
                             return;
@@ -99,8 +101,8 @@ public class RepCommand extends BaseCommand {
                             lines.add("&e#" + rank + " &f" + playerName + " &7» &a" + record.getScore());
                             rank++;
                         }
-                        PaginationUtil.sendPaged(sender, lines, page, 10, plugin.getConfig().getString("messages.reputation-top-header", "&6Top reputation:"));
-                    });
+                        PaginationUtil.sendPaged(sender, lines, requestedPage, 10, plugin.getConfig().getString("messages.reputation-top-header", "&6Top reputation:"));
+                    }));
             return true;
         }
 
@@ -131,7 +133,7 @@ public class RepCommand extends BaseCommand {
         String reason = args.length > 2 ? String.join(" ", java.util.Arrays.copyOfRange(args, 2, args.length)) : plugin.getConfig().getString("messages.reputation-default-reason", "Moderation adjustment");
         UUID staffUuid = sender instanceof Player player ? player.getUniqueId() : UUID.fromString("00000000-0000-0000-0000-000000000000");
         plugin.getReputationManager().adjustReputation(target.getUniqueId(), delta, staffUuid, reason)
-                .thenAccept(score -> {
+                .thenAccept(score -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                     if (score == Integer.MIN_VALUE) {
                         sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.reputation-cooldown")));
                         return;
@@ -142,7 +144,7 @@ public class RepCommand extends BaseCommand {
                             "target", target.getName(),
                             "delta", String.valueOf(delta),
                             "reason", reason));
-                });
+                }));
         return true;
     }
 }

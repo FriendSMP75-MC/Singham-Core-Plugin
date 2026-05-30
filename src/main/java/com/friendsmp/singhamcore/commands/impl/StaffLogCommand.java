@@ -29,12 +29,12 @@ public class StaffLogCommand extends BaseCommand {
             }
         }
 
-        plugin.getDatabaseManager().loadStaffLogsAsync(limit).thenAccept(logs -> {
+        plugin.getDatabaseManager().loadStaffLogsAsync(limit).thenAccept(logs -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.stafflog-header")));
             for (StaffLogEntry entry : logs) {
                 sender.sendMessage(TextUtils.color("&7[&e" + entry.getAction() + "&7] &f" + entry.getTargetName() + " &7by &f" + entry.getStaffUuid() + " &7- &f" + entry.getReason()));
             }
-        });
+        }));
         return true;
     }
 }

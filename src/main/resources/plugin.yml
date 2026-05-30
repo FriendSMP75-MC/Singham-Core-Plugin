@@ -81,7 +81,7 @@ commands:
     permission: singhamcore.command.chatlock
   staffauth:
     description: Authenticate as staff with a PIN.
-    usage: /staffauth <pin>
+    usage: /staffauth setup <pin> | /staffauth login <pin>
     permission: singhamcore.command.staffauth
 permissions:
   singhamcore.command.*:

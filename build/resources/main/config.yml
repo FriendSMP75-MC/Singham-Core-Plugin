@@ -27,7 +27,62 @@ messages:
   check-profile: '&6Moderation profile for {player}:'
   rep-success: '&aReputation updated for {player}. Change: {amount}. New score: {score}.'
   note-success: '&aNote added to {player} profile.'
+  unmute-success: '&a{player} has been unmuted.'
+  not-muted: '&cThat player does not have an active mute.'
+  chat-lock-enabled: '&aChat has been locked.'
+  chat-lock-disabled: '&aChat has been unlocked.'
+  chat-locked: '&cChat is currently locked.'
+  chat-unlocked: '&aChat is currently unlocked.'
   stafflog-header: '&6Staff logs:'
+  staffauth-required: '&cYou must authenticate with /staffauth login <pin> before moderating.'
+  staffauth-session-expired: '&cYour staff authentication session has expired. Please log in again with /staffauth login <pin>.'
+  staffauth-setup-success: '&aStaff PIN setup complete. You are now authenticated.'
+  staffauth-setup-failed: '&cUnable to set up your staff PIN. Please try again.'
+  staffauth-already-registered: '&cA PIN is already registered for your account. Ask an admin to reset it.'
+  staffauth-login-success: '&aAuthentication successful. You may now use staff commands.'
+  staffauth-invalid-pin: '&cInvalid PIN. Please try again.'
+  staffauth-no-pin: '&cNo PIN is registered for your account. Use /staffauth setup <pin> to create one.'
+  staffauth-locked: '&cToo many invalid PIN attempts. Login is temporarily locked.'
+  staffauth-logout-success: '&aYou have been logged out of staff mode.'
+  staffauth-invalid-pin-format: '&cPIN format is invalid. Use only letters and numbers.'
+  staffauth-pin-length: '&cPIN must be between {min} and {max} characters.'
+  staffauth-pin-numeric: '&cPIN must contain only numbers.'
+  report-no-open: '&eThere are no open reports at the moment.'
+  report-claim-success: '&aReport #{id} has been claimed.'
+  report-resolve-success: '&aReport #{id} has been resolved.'
+  report-comment-success: '&aComment added to report #{id}.'
+  report-notification: '&6New report against {target} by {reporter}: {reason}'
+  reports-header: '&6Open reports:'
+  reputation-history-header: '&6Reputation history for {player}:'
+  reputation-history-none: '&eNo reputation history was found for {player}.'
+  reputation-top-header: '&6Reputation leaderboard:'
+  reputation-top-none: '&eNo reputation records were found.'
+  reputation-cooldown: '&cYou must wait before adjusting reputation for that player again.'
+  reputation-self-error: '&cYou cannot modify your own reputation.'
+  reputation-default-reason: 'Moderation adjustment'
+  vanish-enabled: '&aYou are now vanished.'
+  vanish-disabled: '&aYou are no longer vanished.'
+  vanish-fake-join: '{player} joined the game.'
+  vanish-fake-quit: '{player} has left the game.'
+
+staff-auth:
+  session-seconds: 300
+  min-length: 4
+  max-length: 12
+  numeric-only: false
+  lockout-threshold: 5
+  lockout-seconds: 300
+  # Example pins: use UUIDs (recommended) or player names as keys.
+  pins: {}
+  
+ban-screen:
+  title: '&cBanned'
+  lines:
+    - '&7Type: {type}'
+    - '&7Reason: {reason}'
+    - '&7Moderator: {moderator}'
+    - '&7Expires: {expires}'
+    - '&7ID: {id}'
 
 storage:
   cache-refresh-seconds: 30

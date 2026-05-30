@@ -38,7 +38,8 @@ public class WarnCommand extends BaseCommand {
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.WARN,
                 sender.getName(), reason, 0L, null, null, false)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.warn-success").replace("{player}", target.getName()).replace("{reason}", reason))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.warn-success").replace("{player}", target.getName()).replace("{reason}", reason)))));
         return true;
     }
 }

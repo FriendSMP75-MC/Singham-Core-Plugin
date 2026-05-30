@@ -43,15 +43,16 @@ public class ReportsCommand extends BaseCommand {
                 return true;
             }
         }
+        final int requestedPage = page;
 
         reportManager.loadOpenReports(Integer.MAX_VALUE, 0)
-                .thenAccept(reports -> {
+                .thenAccept(reports -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                     if (reports.isEmpty()) {
                         sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.report-no-open")));
                         return;
                     }
                     String header = plugin.getConfig().getString("messages.reports-header", "&6Open reports:");
-                    List<ReportEntry> pageReports = PaginationUtil.page(reports, page, 8);
+                    List<ReportEntry> pageReports = PaginationUtil.page(reports, requestedPage, 8);
                     if (pageReports.isEmpty()) {
                         sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.invalid-usage")));
                         return;
@@ -74,8 +75,8 @@ public class ReportsCommand extends BaseCommand {
                             sender.sendMessage(TextUtils.color(rawLine + " &7[Use /report claim " + report.getReportId() + "]"));
                         }
                     }
-                    sender.sendMessage(TextUtils.color(PaginationUtil.footer(page, 8, reports.size(), header)));
-                });
+                    sender.sendMessage(TextUtils.color(PaginationUtil.footer(requestedPage, 8, reports.size(), header)));
+                }));
         return true;
     }
 }

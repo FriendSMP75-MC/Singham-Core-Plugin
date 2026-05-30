@@ -42,7 +42,8 @@ public class NoteCommand extends BaseCommand {
         var staffUuid = sender instanceof Player ? ((Player) sender).getUniqueId() : java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
         StaffLogEntry entry = new StaffLogEntry(staffUuid, "NOTE", target.getUniqueId(), target.getName(), note, Instant.now());
         staffLogManager.recordAction(entry)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.note-success").replace("{player}", target.getName()))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.note-success").replace("{player}", target.getName())))));
         return true;
     }
 }

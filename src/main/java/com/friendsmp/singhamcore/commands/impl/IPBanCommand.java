@@ -38,7 +38,8 @@ public class IPBanCommand extends BaseCommand {
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         punishmentManager.createPunishment(IP_BAN_PLACEHOLDER, ipAddress, PunishmentType.IP_BAN,
                 sender.getName(), reason, 0L, null, ipAddress, true)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.ipban-success").replace("{ip}", ipAddress).replace("{reason}", reason))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.ipban-success").replace("{ip}", ipAddress).replace("{reason}", reason)))));
         return true;
     }
 }

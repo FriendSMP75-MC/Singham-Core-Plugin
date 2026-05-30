@@ -79,13 +79,26 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
         if (!sender.hasPermission(target.getPermission())) {
             sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.no-permission")));
-            plugin.getAuditLogger().log("command.unauthorized", "Unauthorized command attempt", java.util.Map.of(
-                    "sender", sender.getName(),
-                    "command", command.getName(),
-                    "label", label));
+            if (!command.getName().equalsIgnoreCase("staffauth")) {
+                plugin.getAuditLogger().log("command.unauthorized", "Unauthorized command attempt", java.util.Map.of(
+                        "sender", sender.getName(),
+                        "command", command.getName(),
+                        "label", label));
+            }
+            return true;
+        }
+        if (requiresDatabase(command.getName()) && !plugin.getDatabaseManager().isAvailable()) {
+            sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + "&cDatabase is unavailable. Please try again later."));
             return true;
         }
         return target.execute(sender, args);
+    }
+
+    private boolean requiresDatabase(String commandName) {
+        return switch (commandName.toLowerCase()) {
+            case "staffauth", "vanish", "chatlock" -> false;
+            default -> true;
+        };
     }
 
     @Override

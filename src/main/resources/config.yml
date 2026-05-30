@@ -34,6 +34,19 @@ messages:
   chat-locked: '&cChat is currently locked.'
   chat-unlocked: '&aChat is currently unlocked.'
   stafflog-header: '&6Staff logs:'
+  staffauth-required: '&cYou must authenticate with /staffauth login <pin> before moderating.'
+  staffauth-session-expired: '&cYour staff authentication session has expired. Please log in again with /staffauth login <pin>.'
+  staffauth-setup-success: '&aStaff PIN setup complete. You are now authenticated.'
+  staffauth-setup-failed: '&cUnable to set up your staff PIN. Please try again.'
+  staffauth-already-registered: '&cA PIN is already registered for your account. Ask an admin to reset it.'
+  staffauth-login-success: '&aAuthentication successful. You may now use staff commands.'
+  staffauth-invalid-pin: '&cInvalid PIN. Please try again.'
+  staffauth-no-pin: '&cNo PIN is registered for your account. Use /staffauth setup <pin> to create one.'
+  staffauth-locked: '&cToo many invalid PIN attempts. Login is temporarily locked.'
+  staffauth-logout-success: '&aYou have been logged out of staff mode.'
+  staffauth-invalid-pin-format: '&cPIN format is invalid. Use only letters and numbers.'
+  staffauth-pin-length: '&cPIN must be between {min} and {max} characters.'
+  staffauth-pin-numeric: '&cPIN must contain only numbers.'
   report-no-open: '&eThere are no open reports at the moment.'
   report-claim-success: '&aReport #{id} has been claimed.'
   report-resolve-success: '&aReport #{id} has been resolved.'
@@ -54,6 +67,11 @@ messages:
 
 staff-auth:
   session-seconds: 300
+  min-length: 4
+  max-length: 12
+  numeric-only: false
+  lockout-threshold: 5
+  lockout-seconds: 300
   # Example pins: use UUIDs (recommended) or player names as keys.
   pins: {}
   

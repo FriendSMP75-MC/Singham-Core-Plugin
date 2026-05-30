@@ -49,7 +49,8 @@ public class TempMuteCommand extends BaseCommand {
 
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPMUTE,
                 sender.getName(), reason, durationMillis, expiresAt, null, true)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempmute-success").replace("{player}", target.getName()).replace("{duration}", args[1]))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempmute-success").replace("{player}", target.getName()).replace("{duration}", args[1])))));
         return true;
     }
 

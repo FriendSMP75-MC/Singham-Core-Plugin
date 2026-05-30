@@ -42,7 +42,8 @@ public class KickCommand extends BaseCommand {
         target.kick(Component.text(TextUtils.color("&cKicked: " + reason)));
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.KICK,
                 sender.getName(), reason, 0L, null, null, false)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.kick-success").replace("{player}", target.getName()).replace("{reason}", reason))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.kick-success").replace("{player}", target.getName()).replace("{reason}", reason)))));
         return true;
     }
 }

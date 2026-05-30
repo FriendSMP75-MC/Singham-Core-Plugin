@@ -43,7 +43,8 @@ public class UnmuteCommand extends BaseCommand {
         }
 
         punishmentManager.revokePunishment(sender instanceof Player ? ((Player) sender).getUniqueId() : null, target.getUniqueId(), PunishmentType.MUTE, PunishmentType.TEMPMUTE)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.unmute-success").replace("{player}", target.getName()))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.unmute-success").replace("{player}", target.getName())))));
         return true;
     }
 }

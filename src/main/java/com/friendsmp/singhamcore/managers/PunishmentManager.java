@@ -18,8 +18,8 @@ public class PunishmentManager {
         this.service = new PunishmentService(plugin, new SQLPunishmentRepository(databaseManager));
     }
 
-    public void loadActivePunishments() {
-        service.loadActivePunishments();
+    public java.util.concurrent.CompletableFuture<Integer> loadActivePunishments() {
+        return service.loadActivePunishments();
     }
 
     public java.util.concurrent.CompletableFuture<Void> createPunishment(java.util.UUID playerUuid, String playerName, com.friendsmp.singhamcore.punishments.PunishmentType type,

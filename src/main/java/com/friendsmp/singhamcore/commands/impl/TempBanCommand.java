@@ -45,7 +45,7 @@ public class TempBanCommand extends BaseCommand {
             }
         }
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 2, args.length));
-        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> {
+        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
             if (uuid == null) {
                 sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.player-not-found")));
                 return;
@@ -61,18 +61,20 @@ public class TempBanCommand extends BaseCommand {
             punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.TEMPBAN,
                     moderator, reason, durationMillis, expiresAt, null, true)
                     .thenRun(() -> {
-                        String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempban-success")
-                                .replace("{player}", target.getName())
-                                .replace("{duration}", args[1]));
-                        sender.sendMessage(message);
-                        if (target.isOnline()) {
-                            Player online = target.getPlayer();
-                            if (online != null) {
-                                online.kick(Component.text(TextUtils.color("&cYou have been temporarily banned for " + args[1] + ": " + reason)));
+                        com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
+                            String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.tempban-success")
+                                    .replace("{player}", target.getName())
+                                    .replace("{duration}", args[1]));
+                            sender.sendMessage(message);
+                            if (target.isOnline()) {
+                                Player online = target.getPlayer();
+                                if (online != null) {
+                                    online.kick(Component.text(TextUtils.color("&cYou have been temporarily banned for " + args[1] + ": " + reason)));
+                                }
                             }
-                        }
+                        });
                     });
-        });
+        }));
         return true;
     }
 

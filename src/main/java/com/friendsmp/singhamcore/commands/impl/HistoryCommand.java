@@ -54,6 +54,7 @@ public class HistoryCommand extends BaseCommand {
                 return true;
             }
         }
+        final int requestedPage = page;
 
         UUID targetUuid = target.getUniqueId();
         var punishmentsFuture = plugin.getDatabaseManager().loadPunishmentHistoryAsync(targetUuid);
@@ -62,7 +63,7 @@ public class HistoryCommand extends BaseCommand {
         var logsFuture = plugin.getDatabaseManager().loadStaffLogsForTargetAsync(targetUuid, Integer.MAX_VALUE, 0);
 
         CompletableFuture.allOf(punishmentsFuture, reportsFuture, transactionsFuture, logsFuture)
-                .thenRun(() -> {
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
                     List<Punishment> punishments = punishmentsFuture.join();
                     List<ReportEntry> reports = reportsFuture.join();
                     List<ReputationTransaction> transactions = transactionsFuture.join();
@@ -112,8 +113,8 @@ public class HistoryCommand extends BaseCommand {
 
                     timeline.sort(Comparator.comparing(Map.Entry<Instant, String>::getKey).reversed());
                     List<String> lines = timeline.stream().map(Map.Entry::getValue).collect(Collectors.toList());
-                    paginationSend(sender, lines, page, 8, plugin.getConfig().getString("messages.history-header", "&6Moderation timeline for {player}:").replace("{player}", target.getName()));
-                });
+                    paginationSend(sender, lines, requestedPage, 8, plugin.getConfig().getString("messages.history-header", "&6Moderation timeline for {player}:").replace("{player}", target.getName()));
+                }));
         return true;
     }
 

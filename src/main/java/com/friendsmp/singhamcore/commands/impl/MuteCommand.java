@@ -38,7 +38,8 @@ public class MuteCommand extends BaseCommand {
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
         punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.MUTE,
                 sender.getName(), reason, 0L, null, null, true)
-                .thenRun(() -> sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.mute-success").replace("{player}", target.getName()))));
+                .thenRun(() -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.mute-success").replace("{player}", target.getName())))));
         return true;
     }
 }

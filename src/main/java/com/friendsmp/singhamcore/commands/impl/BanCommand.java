@@ -41,7 +41,7 @@ public class BanCommand extends BaseCommand {
             }
         }
 
-        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> {
+        com.friendsmp.singhamcore.utils.PlayerLookupUtil.lookupUuidByNameAsync(name).thenAccept(uuid -> com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
             if (uuid == null) {
                 sender.sendMessage(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.player-not-found")));
                 return;
@@ -55,18 +55,20 @@ public class BanCommand extends BaseCommand {
             punishmentManager.createPunishment(target.getUniqueId(), target.getName(), PunishmentType.BAN,
                     moderator, reason, 0L, null, null, true)
                     .thenRun(() -> {
-                        String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.ban-success")
-                                .replace("{player}", target.getName())
-                                .replace("{reason}", reason));
-                        sender.sendMessage(message);
-                        if (target.isOnline()) {
-                            Player online = target.getPlayer();
-                            if (online != null) {
-                                online.kick(Component.text(TextUtils.color("&cYou have been banned: " + reason)));
+                        com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
+                            String message = TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.ban-success")
+                                    .replace("{player}", target.getName())
+                                    .replace("{reason}", reason));
+                            sender.sendMessage(message);
+                            if (target.isOnline()) {
+                                Player online = target.getPlayer();
+                                if (online != null) {
+                                    online.kick(Component.text(TextUtils.color("&cYou have been banned: " + reason)));
+                                }
                             }
-                        }
+                        });
                     });
-        });
+        }));
         return true;
     }
 }

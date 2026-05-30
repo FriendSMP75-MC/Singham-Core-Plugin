@@ -38,8 +38,10 @@ public class CheckCommand extends BaseCommand {
             builder.append(TextUtils.color(plugin.getConfig().getString("messages.prefix") + plugin.getConfig().getString("messages.check-profile").replace("{player}", target.getName()))).append("\n");
             builder.append(TextUtils.color("&7Reputation: &f" + record.getScore())).append("\n");
             plugin.getDatabaseManager().loadPunishmentHistoryAsync(target.getUniqueId()).thenAccept(history -> {
-                builder.append(TextUtils.color("&7Total punishments: &f" + history.size()));
-                sender.sendMessage(builder.toString().split("\n"));
+                com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () -> {
+                    builder.append(TextUtils.color("&7Total punishments: &f" + history.size()));
+                    sender.sendMessage(builder.toString().split("\n"));
+                });
             });
         });
         return true;

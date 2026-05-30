@@ -20,16 +20,19 @@ public class DatabaseManager {
     private final SinghamCorePlugin plugin;
     private final HikariDataSource dataSource;
     private final boolean available;
+    private final boolean migrationsApplied;
 
     public DatabaseManager(SinghamCorePlugin plugin) {
         this.plugin = plugin;
         HikariDataSource source = null;
         boolean isAvailable = false;
+        boolean didMigrate = false;
 
         FileConfiguration config = plugin.getConfig();
         try {
             source = DataSourceFactory.createDataSource(config, plugin);
             MigrationManager.migrate(source, plugin);
+            didMigrate = true;
             isAvailable = true;
         } catch (ClassNotFoundException ex) {
             plugin.getLogger().severe("JDBC driver not found: " + ex.getMessage());
@@ -43,6 +46,9 @@ public class DatabaseManager {
                 source.close();
                 source = null;
             }
+            if (ex instanceof IllegalStateException) {
+                throw (IllegalStateException) ex;
+            }
         }
 
         if (!isAvailable) {
@@ -51,6 +57,7 @@ public class DatabaseManager {
 
         this.dataSource = source;
         this.available = isAvailable;
+        this.migrationsApplied = didMigrate;
     }
 
     // Table creation is handled by Flyway migrations.
@@ -70,6 +77,10 @@ public class DatabaseManager {
 
     public boolean isAvailable() {
         return available;
+    }
+
+    public boolean migrationsApplied() {
+        return migrationsApplied;
     }
 
     public CompletableFuture<Void> savePunishmentAsync(Punishment punishment) {

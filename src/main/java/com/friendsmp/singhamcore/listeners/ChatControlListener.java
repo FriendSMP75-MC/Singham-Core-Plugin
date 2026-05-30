@@ -24,7 +24,8 @@ public class ChatControlListener implements Listener {
         Player player = event.getPlayer();
         // Global chat lock enforcement
         if (chatLockManager.isLocked() && !player.hasPermission("singham.chat.lock.bypass")) {
-            player.sendMessage(plugin.getConfig().getString("messages.chat-locked", "Chat is currently locked."));
+            com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                    player.sendMessage(plugin.getConfig().getString("messages.chat-locked", "Chat is currently locked.")));
             event.setCancelled(true);
             return;
         }
@@ -35,7 +36,8 @@ public class ChatControlListener implements Listener {
             Punishment punish = pManager.getActivePunishment(player.getUniqueId());
             if (punish != null && (punish.getType() == PunishmentType.MUTE || punish.getType() == PunishmentType.TEMPMUTE)) {
                 String msg = plugin.getConfig().getString("messages.muted", "You are muted.");
-                player.sendMessage(msg.replace("{reason}", punish.getReason() == null ? "" : punish.getReason()));
+                com.friendsmp.singhamcore.utils.BukkitThread.run(plugin, () ->
+                        player.sendMessage(msg.replace("{reason}", punish.getReason() == null ? "" : punish.getReason())));
                 event.setCancelled(true);
             }
         }

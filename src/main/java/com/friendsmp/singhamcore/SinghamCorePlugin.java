@@ -45,10 +45,10 @@ public final class SinghamCorePlugin extends JavaPlugin {
         vanishManager = new VanishManager(this);
         commandManager = new CommandManager(this);
 
-        punishmentManager.loadActivePunishments();
         // register listeners
         registerListeners();
         commandManager.registerCommands();
+        logStartupHealth();
         getLogger().info("Singham Core enabled successfully.");
     }
 
@@ -102,8 +102,13 @@ public final class SinghamCorePlugin extends JavaPlugin {
 
     public boolean ensureStaffAuth(CommandSender sender) {
         if (sender instanceof Player player) {
+            boolean expired = authService.sessionExpired(player.getUniqueId());
             if (!authService.isAuthenticated(player.getUniqueId())) {
-                player.sendMessage(TextUtils.color(getConfig().getString("messages.prefix") + "&cYou must authenticate with /staffauth <pin> before moderating."));
+                if (expired) {
+                    player.sendMessage(TextUtils.color(getConfig().getString("messages.prefix") + getConfig().getString("messages.staffauth-session-expired")));
+                } else {
+                    player.sendMessage(TextUtils.color(getConfig().getString("messages.prefix") + getConfig().getString("messages.staffauth-required")));
+                }
                 auditLogger.log("auth.failure", "Staff authentication required", java.util.Map.of(
                         "sender", player.getName(),
                         "uuid", player.getUniqueId().toString()));
@@ -116,9 +121,35 @@ public final class SinghamCorePlugin extends JavaPlugin {
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.PlayerConnectionListener(punishmentManager), this);
         getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.AuthListener(this), this);
+        getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.SensitiveCommandListener(this), this);
         // Chat control (mutes & global lock)
         chatLockManager = new com.friendsmp.singhamcore.managers.ChatLockManager();
         getServer().getPluginManager().registerEvents(new com.friendsmp.singhamcore.listeners.ChatControlListener(this, chatLockManager), this);
         getServer().getPluginManager().registerEvents(new VanishListener(vanishManager), this);
+    }
+
+    private void logStartupHealth() {
+        if (databaseManager == null || !databaseManager.isAvailable()) {
+            getLogger().warning("[SinghamCore] Running in DEGRADED mode");
+            return;
+        }
+
+        getLogger().info("[SinghamCore] Database connected");
+        if (databaseManager.migrationsApplied()) {
+            getLogger().info("[SinghamCore] Migrations applied");
+        }
+
+        var activePunishments = punishmentManager.loadActivePunishments();
+        var openReports = reportManager.loadOpenReports(Integer.MAX_VALUE, 0);
+        activePunishments.thenCombine(openReports, (punishmentCount, reports) -> {
+            getLogger().info("[SinghamCore] Active punishments loaded: " + punishmentCount);
+            getLogger().info("[SinghamCore] Reports loaded: " + reports.size());
+            getLogger().info("[SinghamCore] Running in NORMAL mode");
+            return null;
+        }).exceptionally(ex -> {
+            getLogger().warning("[SinghamCore] Startup health check failed: " + ex.getMessage());
+            getLogger().warning("[SinghamCore] Running in DEGRADED mode");
+            return null;
+        });
     }
 }
